@@ -11,16 +11,17 @@
   },
   "dependencies": {
     "@korero/ai": "*",
+    "@korero/curriculum": "*",
     "@korero/data": "*",
     "@korero/ui": "*",
-    "@korero/curriculum": "*",
-    "@supabase/supabase-js": "^2.44.0",
     "@supabase/ssr": "^0.4.0",
-    "next": "14.2.4",
+    "@supabase/supabase-js": "^2.44.0",
+    "next": "14.2.35",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
   },
   "devDependencies": {
+    "@next/swc-win32-x64-msvc": "^14.2.33",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",

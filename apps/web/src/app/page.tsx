@@ -1,12 +1,15 @@
-export default function HomePage() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
-      <h1 className="text-4xl font-bold text-tangaroa-800">
-        Kōrero Companion
-      </h1>
-      <p className="mt-4 text-lg text-gray-600">
-        AI-powered te reo Māori conversation practice
-      </p>
-    </main>
-  );
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+
+export default async function HomePage() {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user) {
+    redirect("/dashboard");
+  } else {
+    redirect("/auth/login");
+  }
 }
