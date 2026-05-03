@@ -8,46 +8,29 @@ export default async function ProtectedLayout({
   children: React.ReactNode;
 }) {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  // Middleware handles most redirects, but this is a belt-and-suspenders check
-  if (!user) {
-    redirect("/auth/login");
-  }
+  if (!user) redirect("/auth/login");
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Nav */}
-      <nav className="bg-tangaroa-800 text-white">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
-          <a href="/dashboard" className="font-bold text-lg tracking-tight">
+    <div className="min-h-screen bg-secondary">
+      <nav className="bg-primary text-secondary shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+          <a href="/dashboard" className="font-heading text-xl font-bold text-secondary tracking-tight">
             Kōrero Companion
           </a>
-          <div className="flex items-center gap-6 text-sm">
-            <a href="/practice" className="text-tangaroa-200 hover:text-white transition">
-              Practice
-            </a>
-            <a href="/progress" className="text-tangaroa-200 hover:text-white transition">
-              Progress
-            </a>
-            <a href="/challenges" className="text-tangaroa-200 hover:text-white transition">
-              Challenges
-            </a>
+          <div className="flex items-center gap-6 text-sm font-body">
+            <a href="/practice"   className="text-secondary/70 hover:text-secondary transition">Practice</a>
+            <a href="/progress"   className="text-secondary/70 hover:text-secondary transition">Progress</a>
+            <a href="/challenges" className="text-secondary/70 hover:text-secondary transition">Challenges</a>
             <form action={signOut}>
-              <button
-                type="submit"
-                className="text-tangaroa-300 hover:text-white transition text-xs"
-              >
+              <button type="submit" className="text-secondary/50 hover:text-secondary transition text-xs">
                 Sign out
               </button>
             </form>
           </div>
         </div>
       </nav>
-
-      {/* Page content */}
       <main className="max-w-5xl mx-auto px-4 py-8">{children}</main>
     </div>
   );

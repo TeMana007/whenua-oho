@@ -9,18 +9,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        kowhai: {
-          50: "#fefce8",
-          100: "#fef9c3",
-          400: "#facc15",
-          500: "#eab308",
-          600: "#ca8a04",
-        },
-        tangaroa: {
-          700: "#1e3a5f",
-          800: "#162d4a",
-          900: "#0f1f33",
-        },
+        primary:   "#04342C",
+        secondary: "#F5F0E8",
+        accent:    "#C8A951",
+        success:   "#2D7A4F",
+        warning:   "#E07B39",
+        ink:       "#1A1A1A",
+      },
+      fontFamily: {
+        // Font family names match the @expo-google-fonts variant names
+        heading:       ["PlayfairDisplay_700Bold"],
+        "heading-regular": ["PlayfairDisplay_400Regular"],
+        body:          ["DMSans_400Regular"],
+        "body-medium": ["DMSans_500Medium"],
+        "body-bold":   ["DMSans_700Bold"],
       },
     },
   },

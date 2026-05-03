@@ -8,22 +8,29 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Māori-inspired palette
-        kowhai: {
-          50: "#fefce8",
-          100: "#fef9c3",
-          400: "#facc15",
-          500: "#eab308",
-          600: "#ca8a04",
-        },
-        tangaroa: {
-          700: "#1e3a5f",
-          800: "#162d4a",
-          900: "#0f1f33",
-        },
+        primary:   "#04342C",
+        secondary: "#F5F0E8",
+        accent:    "#C8A951",
+        success:   "#2D7A4F",
+        warning:   "#E07B39",
+        ink:       "#1A1A1A",
       },
       fontFamily: {
-        sans: ["var(--font-inter)"],
+        // CSS variable injected by next/font in layout.tsx
+        heading:    ["var(--font-playfair)", "Georgia", "serif"],
+        body:       ["var(--font-dm-sans)", "system-ui", "sans-serif"],
+        // Aliases used by shared UI components
+        "body-medium": ["var(--font-dm-sans)", "system-ui", "sans-serif"],
+        "body-bold":   ["var(--font-dm-sans)", "system-ui", "sans-serif"],
+      },
+      borderRadius: {
+        "2xl": "1rem",
+        "3xl": "1.5rem",
+      },
+      minHeight: {
+        "button-sm": "48px",
+        "button-md": "56px",
+        "button-lg": "64px",
       },
     },
   },

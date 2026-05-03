@@ -1,12 +1,26 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+  // Includes macron precomposed glyphs (Latin Extended-A)
+  preload: true,
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+  weight: ["400", "500", "700"],
+  preload: true,
+});
 
 export const metadata: Metadata = {
   title: "Kōrero Companion",
-  description: "Learn te reo Māori with AI-powered conversation practice",
+  description: "AI-powered te reo Māori conversation practice",
 };
 
 export default function RootLayout({
@@ -15,8 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} font-sans bg-white text-gray-900`}>
+    <html lang="mi" className={`${playfair.variable} ${dmSans.variable}`}>
+      <body className="font-body bg-secondary text-ink antialiased">
         {children}
       </body>
     </html>
