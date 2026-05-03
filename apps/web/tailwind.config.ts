@@ -8,6 +8,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Hex values so Tailwind can generate opacity variants (bg-primary/10 etc.)
         primary:   "#04342C",
         secondary: "#F5F0E8",
         accent:    "#C8A951",

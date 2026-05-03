@@ -40,6 +40,10 @@ export {
   updateClassWeek,
 } from "./classes";
 
+// Stats — streak + due count
+export { getStreak, getDueCount, getLearnerStats } from "./stats";
+export type { LearnerStats } from "./stats";
+
 // Challenges & completions
 export {
   getChallengesForClass,
