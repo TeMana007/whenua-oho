@@ -11,11 +11,21 @@ export async function getLearner(id: string): Promise<Learner | null> {
   return data;
 }
 
-export async function getLearnersByClass(classCode: string): Promise<Learner[]> {
+export async function getLearnerByUserId(userId: string): Promise<Learner | null> {
   const { data, error } = await createSupabaseClient()
     .from("learners")
     .select("*")
-    .eq("class_code", classCode)
+    .eq("user_id", userId)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getLearnersByClass(classId: string): Promise<Learner[]> {
+  const { data, error } = await createSupabaseClient()
+    .from("learners")
+    .select("*")
+    .eq("class_id", classId)
     .order("name");
   if (error) throw error;
   return data ?? [];

@@ -1,37 +1,35 @@
 import { createSupabaseClient } from "./supabase";
-import type { SentencePattern, Phrase, Level } from "./types";
+import type { SentencePattern, Phrase } from "./types";
 
-export async function getPatternsByLevel(level: Level): Promise<SentencePattern[]> {
+export async function getPatternsByLevel(level: string): Promise<SentencePattern[]> {
   const { data, error } = await createSupabaseClient()
     .from("sentence_patterns")
     .select("*")
     .eq("level", level)
-    .order("week_number")
-    .order("pattern_number");
+    .order("order_num");
   if (error) throw error;
   return data ?? [];
 }
 
 export async function getPatternsByWeek(
-  level: Level,
-  weekNumber: number
+  level: string,
+  orderNum: number
 ): Promise<SentencePattern[]> {
   const { data, error } = await createSupabaseClient()
     .from("sentence_patterns")
     .select("*")
     .eq("level", level)
-    .eq("week_number", weekNumber)
-    .order("pattern_number");
+    .lte("order_num", orderNum)
+    .order("order_num");
   if (error) throw error;
   return data ?? [];
 }
 
-export async function getPhrasesForPattern(patternId: string): Promise<Phrase[]> {
+export async function getPhrasesForPattern(patternNumber: number): Promise<Phrase[]> {
   const { data, error } = await createSupabaseClient()
     .from("phrases")
     .select("*")
-    .eq("pattern_id", patternId)
-    .order("difficulty");
+    .eq("pattern_number", patternNumber);
   if (error) throw error;
   return data ?? [];
 }

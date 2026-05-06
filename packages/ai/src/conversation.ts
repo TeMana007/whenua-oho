@@ -10,7 +10,7 @@ export async function streamConversation(
   let fullResponse = "";
 
   const stream = await client.messages.stream({
-    model: "claude-opus-4-5",
+    model: "claude-sonnet-4-20250514",
     max_tokens: 1024,
     system: SYSTEM_PROMPT,
     messages: messages.map((m) => ({

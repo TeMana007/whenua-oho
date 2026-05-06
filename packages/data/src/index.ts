@@ -5,6 +5,7 @@ export type { TypedSupabaseClient } from "./supabase";
 // Learners
 export {
   getLearner,
+  getLearnerByUserId,
   getLearnersByClass,
   upsertLearner,
   updateLearnerLevel,
@@ -36,8 +37,9 @@ export {
 // Classes
 export {
   getClassByCode,
+  getClassById,
   createClass,
-  updateClassWeek,
+  updateClassName,
 } from "./classes";
 
 // Stats — streak + due count

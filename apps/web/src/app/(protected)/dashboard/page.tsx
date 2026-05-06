@@ -3,10 +3,10 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatMaoriDate } from "@/lib/maori-date";
 import {
-  getLearner,
-  getClassByCode,
+  getLearnerByUserId,
+  getClassById,
   getChallengesForClass,
-  getPatternsByWeek,
+  getPatternsByLevel,
   getStreak,
   getDueCount,
 } from "@korero/data";
@@ -21,28 +21,26 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/login");
 
-  // 1. Learner profile
-  const learner = await getLearner(user.id).catch(() => null);
+  // 1. Learner profile (by auth user_id)
+  const learner = await getLearnerByUserId(user.id).catch(() => null);
   if (!learner) redirect("/onboarding");
 
   // 2. Parallel: streak, due count, class info
   const [streak, dueCount, classInfo] = await Promise.all([
-    getStreak(user.id),
-    getDueCount(user.id),
-    learner.class_code ? getClassByCode(learner.class_code).catch(() => null) : null,
+    getStreak(learner.id),
+    getDueCount(learner.id),
+    learner.class_id ? getClassById(learner.class_id).catch(() => null) : null,
   ]);
-
-  const weekNumber = classInfo?.week_number ?? 1;
 
   // 3. Patterns + challenges (depend on class info)
   const [patterns, challenges] = await Promise.all([
-    getPatternsByWeek(learner.level, weekNumber).catch(() => []),
+    getPatternsByLevel(learner.level).catch(() => []),
     classInfo ? getChallengesForClass(classInfo.id).catch(() => []) : [],
   ]);
 
-  const todayPattern = patterns[0] ?? null;
+  const todayPattern    = patterns[0] ?? null;
   const latestChallenge = challenges[0] ?? null;
-  const firstName = learner.name?.split(" ")[0] ?? "e hoa";
+  const firstName       = learner.name?.split(" ")[0] ?? "e hoa";
 
   return (
     <div className="space-y-5 pb-24 sm:pb-0">
@@ -50,11 +48,7 @@ export default async function DashboardPage() {
       <Greeting name={firstName} streak={streak} />
 
       {/* ── Today's Practice ──────────────────────────────────────────── */}
-      <PracticeCard
-        pattern={todayPattern}
-        weekNumber={weekNumber}
-        level={learner.level}
-      />
+      <PracticeCard pattern={todayPattern} level={learner.level} />
 
       {/* ── Review + Class row ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -99,11 +93,9 @@ function Greeting({ name, streak }: { name: string; streak: number }) {
 
 function PracticeCard({
   pattern,
-  weekNumber,
   level,
 }: {
   pattern: SentencePattern | null;
-  weekNumber: number;
   level: string;
 }) {
   const durationMap: Record<string, number> = { beginner: 8, intermediate: 12, advanced: 15 };
@@ -121,34 +113,18 @@ function PracticeCard({
           <span className="font-body text-xs text-secondary/50 uppercase tracking-widest">
             Today's Practice
           </span>
-          <div className="flex items-center gap-3">
-            <span className="font-body text-xs font-medium bg-white/10 text-secondary/70 rounded-full px-3 py-1">
-              Week {weekNumber}
-            </span>
-            <span className="font-body text-xs text-secondary/50">⏱ ~{duration} min</span>
-          </div>
+          <span className="font-body text-xs text-secondary/50">⏱ ~{duration} min</span>
         </div>
 
         {/* Pattern */}
         {pattern ? (
           <div className="space-y-1">
-            <p className="font-heading text-2xl font-bold text-secondary leading-snug">
-              {pattern.pattern_te_reo}
+            <p className="font-heading text-2xl font-bold text-secondary leading-snug" lang="mi">
+              {pattern.pattern}
             </p>
             <p className="font-body text-sm text-secondary/60 italic">
-              {pattern.pattern_english}
+              {pattern.english}
             </p>
-            <div className="mt-3 pt-3 border-t border-white/10">
-              <p className="font-body text-xs text-accent/80 mb-1 uppercase tracking-widest">
-                Example
-              </p>
-              <p className="font-heading text-base text-secondary/90 italic">
-                "{pattern.example_te_reo}"
-              </p>
-              <p className="font-body text-xs text-secondary/50 mt-0.5">
-                {pattern.example_english}
-              </p>
-            </div>
           </div>
         ) : (
           <div className="space-y-1">
@@ -238,7 +214,7 @@ function ClassCard({
           </p>
         </div>
         <Link
-          href="/profile"
+          href="/onboarding"
           className="flex items-center justify-center h-12 rounded-xl bg-secondary border border-ink/10 font-body font-bold text-sm text-ink/60 hover:border-primary/30 transition"
         >
           Join a class →
@@ -264,8 +240,8 @@ function ClassCard({
             <p className="font-body text-xs text-primary/70 font-medium uppercase tracking-wide mb-1">
               🏆 Challenge
             </p>
-            <p className="font-heading text-lg font-bold text-ink leading-snug line-clamp-2">
-              {challenge.title}
+            <p className="font-heading text-lg font-bold text-ink leading-snug line-clamp-2" lang="mi">
+              {challenge.phrase}
             </p>
             {challenge.due_date && (
               <p className="font-body text-xs text-ink/40 mt-1">
@@ -276,18 +252,19 @@ function ClassCard({
         ) : (
           <>
             <p className="font-heading text-xl font-bold text-ink">
-              {classInfo.kaiako_name}
+              {classInfo.name}
             </p>
-            <p className="font-body text-sm text-ink/60 mt-1">
-              Week {classInfo.week_number}
-              {classInfo.current_theme ? ` · ${classInfo.current_theme}` : ""}
-            </p>
+            {classInfo.teacher_name && (
+              <p className="font-body text-sm text-ink/60 mt-1">
+                {classInfo.teacher_name}
+              </p>
+            )}
           </>
         )}
       </div>
 
       <Link
-        href="/group"
+        href="/games"
         className="flex items-center justify-center h-12 rounded-xl bg-primary/8 border border-primary/15 font-body font-bold text-sm text-primary hover:bg-primary/12 transition"
       >
         View Group →

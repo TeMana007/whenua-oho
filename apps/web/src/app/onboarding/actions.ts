@@ -7,7 +7,7 @@ export async function lookupClassCode(code: string) {
   const supabase = createClient();
   const { data } = await supabase
     .from("classes")
-    .select("class_code, kaiako_name, week_number, current_theme")
+    .select("id, name, class_code")
     .eq("class_code", code.trim().toUpperCase())
     .single();
   return data ?? null;
@@ -25,14 +25,29 @@ export async function completeOnboarding(payload: {
 
   if (!user) redirect("/auth/login");
 
+  // Look up class_id from class_code if provided
+  let classId: string | null = null;
+  if (payload.classCode) {
+    const { data: cls } = await supabase
+      .from("classes")
+      .select("id")
+      .eq("class_code", payload.classCode.toUpperCase())
+      .single();
+    classId = cls?.id ?? null;
+  }
+
+  // Upsert learner row (may already exist from auth trigger)
   const { error } = await supabase
     .from("learners")
-    .update({
-      name: payload.name.trim(),
-      level: payload.level,
-      class_code: payload.classCode ?? null,
-    })
-    .eq("id", user.id);
+    .upsert(
+      {
+        user_id:  user.id,
+        name:     payload.name.trim(),
+        level:    payload.level,
+        class_id: classId,
+      },
+      { onConflict: "user_id" }
+    );
 
   if (error) throw new Error(error.message);
 

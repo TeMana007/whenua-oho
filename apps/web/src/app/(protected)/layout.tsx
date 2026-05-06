@@ -4,11 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { signOut } from "@/app/auth/actions";
 
 const NAV_ITEMS = [
-  { href: "/dashboard",  label: "Home",    icon: "🏠" },
-  { href: "/practice",   label: "Kōrero",  icon: "🎙️" },
-  { href: "/review",     label: "Review",  icon: "📚" },
-  { href: "/group",      label: "Group",   icon: "👥" },
-  { href: "/progress",   label: "Progress",icon: "📊" },
+  { href: "/dashboard", label: "Home",     icon: "🏠" },
+  { href: "/korero",    label: "Kōrero",   icon: "🗣️" },
+  { href: "/practice",  label: "Practice", icon: "🎙️" },
+  { href: "/review",    label: "Review",   icon: "📚" },
+  { href: "/games",     label: "Games",    icon: "🧩" },
 ];
 
 export default async function ProtectedLayout({

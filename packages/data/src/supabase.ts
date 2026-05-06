@@ -1,23 +1,28 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "./types";
 
-export type TypedSupabaseClient = SupabaseClient<Database>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TypedSupabaseClient = SupabaseClient<any>;
 
 /**
  * Browser / React Native client — uses the anon key.
  * Safe to call on the client side; RLS enforces access control.
+ *
+ * Note: Database generic omitted due to supabase-js 2.105.x type API changes.
+ * Each call site casts query results to the appropriate type.
  */
 export function createSupabaseClient(): TypedSupabaseClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  // Support both Next.js (NEXT_PUBLIC_) and Expo (EXPO_PUBLIC_) prefixes
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
   if (!url || !key) {
     throw new Error(
-      "Missing Supabase env vars: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY must be set in .env.local"
+      "Missing Supabase env vars: set NEXT_PUBLIC_SUPABASE_URL + NEXT_PUBLIC_SUPABASE_ANON_KEY (web) " +
+      "or EXPO_PUBLIC_SUPABASE_URL + EXPO_PUBLIC_SUPABASE_ANON_KEY (mobile)"
     );
   }
 
-  return createClient<Database>(url, key);
+  return createClient(url, key);
 }
 
 /**
@@ -35,7 +40,7 @@ export function createSupabaseAdminClient(): TypedSupabaseClient {
     );
   }
 
-  return createClient<Database>(url, key, {
+  return createClient(url, key, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

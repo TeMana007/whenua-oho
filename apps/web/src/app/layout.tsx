@@ -32,6 +32,10 @@ export default function RootLayout({
     <html lang="mi" className={`${playfair.variable} ${dmSans.variable}`}>
       <body className="font-body bg-secondary text-ink antialiased">
         {children}
+        {/* Cultural attribution — required per CLAUDE.md */}
+        <footer className="text-center py-4 text-[11px] font-body text-ink/30">
+          Nā Dr. Rāpata Wiri ngā akoranga
+        </footer>
       </body>
     </html>
   );

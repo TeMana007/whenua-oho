@@ -11,6 +11,16 @@ export async function getClassByCode(classCode: string): Promise<Class | null> {
   return data;
 }
 
+export async function getClassById(id: string): Promise<Class | null> {
+  const { data, error } = await createSupabaseClient()
+    .from("classes")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function createClass(cls: ClassInsert): Promise<Class> {
   const { data, error } = await createSupabaseClient()
     .from("classes")
@@ -21,14 +31,13 @@ export async function createClass(cls: ClassInsert): Promise<Class> {
   return data;
 }
 
-export async function updateClassWeek(
+export async function updateClassName(
   classCode: string,
-  weekNumber: number,
-  currentTheme?: string
+  name: string
 ): Promise<void> {
   const { error } = await createSupabaseClient()
     .from("classes")
-    .update({ week_number: weekNumber, current_theme: currentTheme ?? null })
+    .update({ name })
     .eq("class_code", classCode);
   if (error) throw error;
 }

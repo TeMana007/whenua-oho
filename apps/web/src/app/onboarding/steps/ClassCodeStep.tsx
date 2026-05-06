@@ -4,10 +4,9 @@ import { useState, useTransition } from "react";
 import { lookupClassCode } from "../actions";
 
 interface ClassMeta {
+  id: string;
+  name: string;
   class_code: string;
-  kaiako_name: string;
-  week_number: number;
-  current_theme: string | null;
 }
 
 export function ClassCodeStep({
@@ -29,7 +28,7 @@ export function ClassCodeStep({
     startTransition(async () => {
       const result = await lookupClassCode(code);
       if (result) {
-        setClassMeta(result);
+        setClassMeta(result as ClassMeta);
       } else {
         setNotFound(true);
       }
@@ -61,7 +60,7 @@ export function ClassCodeStep({
               setNotFound(false);
             }}
             onKeyDown={(e) => e.key === "Enter" && lookup()}
-            placeholder="e.g. MAORI101"
+            placeholder="e.g. KAKANO01"
             maxLength={20}
             className="input-field flex-1 text-center uppercase tracking-widest text-lg font-body-bold"
           />
@@ -77,7 +76,7 @@ export function ClassCodeStep({
         {/* Error */}
         {notFound && (
           <div className="rounded-2xl bg-warning/10 border border-warning/30 px-4 py-3 text-sm font-body text-warning text-center">
-            Kāo — that code wasn't found. Check with your kaiako.
+            Kāo — that code wasn&apos;t found. Check with your kaiako.
           </div>
         )}
 
@@ -86,14 +85,10 @@ export function ClassCodeStep({
           <div className="rounded-3xl bg-primary/5 border-2 border-primary p-5 space-y-1">
             <p className="font-body text-xs text-ink/40 uppercase tracking-wide">Class found!</p>
             <p className="font-heading text-xl font-bold text-primary">
-              {classMeta.class_code}
+              {classMeta.name}
             </p>
             <p className="font-body text-sm text-ink/70">
-              Kaiako: <span className="font-medium text-ink">{classMeta.kaiako_name}</span>
-            </p>
-            <p className="font-body text-sm text-ink/70">
-              Week {classMeta.week_number}
-              {classMeta.current_theme ? ` · ${classMeta.current_theme}` : ""}
+              Code: <span className="font-medium text-ink">{classMeta.class_code}</span>
             </p>
           </div>
         )}

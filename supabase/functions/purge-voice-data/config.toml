@@ -1,0 +1,4 @@
+[functions.purge-voice-data]
+# This function uses the service-role key — do NOT expose publicly.
+# It is triggered by Supabase scheduled cron, not by end-users.
+verify_jwt = false

@@ -11,11 +11,11 @@ interface TabConfig {
 }
 
 const TABS: TabConfig[] = [
-  { name: "index",    title: "Home",     icon: "home-outline",        iconFocused: "home" },
-  { name: "korero",   title: "Kōrero",   icon: "mic-outline",         iconFocused: "mic" },
-  { name: "review",   title: "Review",   icon: "book-outline",        iconFocused: "book" },
-  { name: "group",    title: "Group",    icon: "people-outline",      iconFocused: "people" },
-  { name: "progress", title: "Progress", icon: "stats-chart-outline", iconFocused: "stats-chart" },
+  { name: "index",    title: "Home",     icon: "home-outline",          iconFocused: "home" },
+  { name: "korero",   title: "Kōrero",   icon: "mic-outline",           iconFocused: "mic" },
+  { name: "review",   title: "Review",   icon: "book-outline",          iconFocused: "book" },
+  { name: "group",    title: "Games",    icon: "game-controller-outline",iconFocused: "game-controller" },
+  { name: "progress", title: "Progress", icon: "stats-chart-outline",   iconFocused: "stats-chart" },
 ];
 
 export default function TabLayout() {

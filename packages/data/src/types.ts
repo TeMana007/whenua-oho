@@ -1,71 +1,62 @@
 // ============================================================
-// Kōrero Companion — Database types (mirrors Supabase schema)
+// Kōrero Companion — Database types (mirrors actual Supabase schema)
 // ============================================================
 
 export type Level = "beginner" | "intermediate" | "advanced";
 
-// ---- Row types ----
+// ---- Row types (match actual column names) ----
 
 export interface Learner {
   id: string;
+  user_id: string;
   name: string;
-  email: string;
   level: Level;
-  class_code: string | null;
+  class_id: string | null;
   created_at: string;
 }
 
 export interface Class {
   id: string;
+  name: string;
   class_code: string;
-  kaiako_name: string;
-  kaiako_email: string;
-  week_number: number;
-  current_theme: string | null;
+  teacher_name: string | null;
   created_at: string;
 }
 
 export interface SentencePattern {
   id: string;
-  pattern_number: number;
-  level: Level;
-  pattern_te_reo: string;
-  pattern_english: string;
-  example_te_reo: string;
-  example_english: string;
-  audio_url: string | null;
-  week_number: number;
+  pattern: string;
+  english: string;
+  level: string;
+  order_num: number;
   created_at: string;
 }
 
 export interface Phrase {
   id: string;
-  pattern_id: string;
-  te_reo: string;
+  maori: string;
   english: string;
-  scenario: string | null;
-  audio_url: string | null;
-  difficulty: number; // 1–5
-  created_at: string;
+  pronunciation: string | null;
+  pattern_number: number | null;
+  created_at: string | null;
 }
 
 export interface LearnerProgress {
   id: string;
   learner_id: string;
   phrase_id: string;
-  confidence_score: number; // 0.00–1.00
-  attempts: number;
+  confidence_score: number;
   last_reviewed: string | null;
   next_review: string | null;
-  pronunciation_notes: string | null;
-  updated_at: string;
+  updated_at: string | null;
+  created_at: string | null;
 }
 
 export interface SpeakingAttempt {
   id: string;
   learner_id: string;
   phrase_id: string;
-  confidence_score: number; // 0.00–1.00
+  confidence_score: number;
   whisper_transcript: string | null;
   ai_feedback: string | null;
   duration_seconds: number | null;
@@ -75,11 +66,10 @@ export interface SpeakingAttempt {
 export interface Challenge {
   id: string;
   class_id: string;
-  title: string;
+  phrase: string;
   description: string | null;
   due_date: string | null;
-  pattern_id: string | null;
-  created_at: string;
+  created_at: string | null;
 }
 
 export interface ChallengeCompletion {
@@ -90,62 +80,95 @@ export interface ChallengeCompletion {
   completed_at: string;
 }
 
+// ---- Supplemental types (used by non-exported utility modules) ----
+
+/** Stub for users.ts — mirrors a `profiles` table if added later. */
+export interface UserProfile {
+  id:         string;
+  name:       string | null;
+  avatar_url: string | null;
+  created_at: string;
+}
+
+/** Stub for sessions.ts — mirrors a `sessions` table if added later. */
+export interface LearningSession {
+  id:               string;
+  user_id:          string;
+  learner_id:       string;
+  phrase_count:     number;
+  duration_seconds: number | null;
+  created_at:       string;
+}
+
 // ---- Insert types (omit server-generated fields) ----
 
-export type LearnerInsert = Omit<Learner, "id" | "created_at">;
-export type ClassInsert = Omit<Class, "id" | "created_at">;
+export type LearnerInsert        = Omit<Learner, "id" | "created_at">;
+export type ClassInsert          = Omit<Class, "id" | "created_at">;
 export type SentencePatternInsert = Omit<SentencePattern, "id" | "created_at">;
-export type PhraseInsert = Omit<Phrase, "id" | "created_at">;
-export type LearnerProgressInsert = Omit<LearnerProgress, "id" | "updated_at">;
+export type PhraseInsert         = Omit<Phrase, "id" | "created_at">;
+export type LearnerProgressInsert = Omit<LearnerProgress, "id" | "created_at">;
 export type SpeakingAttemptInsert = Omit<SpeakingAttempt, "id" | "created_at">;
-export type ChallengeInsert = Omit<Challenge, "id" | "created_at">;
+export type ChallengeInsert      = Omit<Challenge, "id" | "created_at">;
 export type ChallengeCompletionInsert = Omit<ChallengeCompletion, "id" | "completed_at">;
 
-// ---- Supabase Database type (used for typed client) ----
+// ---- Supabase Database type (used for typed client generic) ----
+// Each table MUST include Relationships: [] to satisfy GenericTable constraint.
 
 export type Database = {
   public: {
     Tables: {
       learners: {
-        Row: Learner;
-        Insert: LearnerInsert;
-        Update: Partial<LearnerInsert>;
+        Row:           Learner;
+        Insert:        LearnerInsert;
+        Update:        Partial<LearnerInsert>;
+        Relationships: [];
       };
       classes: {
-        Row: Class;
-        Insert: ClassInsert;
-        Update: Partial<ClassInsert>;
+        Row:           Class;
+        Insert:        ClassInsert;
+        Update:        Partial<ClassInsert>;
+        Relationships: [];
       };
       sentence_patterns: {
-        Row: SentencePattern;
-        Insert: SentencePatternInsert;
-        Update: Partial<SentencePatternInsert>;
+        Row:           SentencePattern;
+        Insert:        SentencePatternInsert;
+        Update:        Partial<SentencePatternInsert>;
+        Relationships: [];
       };
       phrases: {
-        Row: Phrase;
-        Insert: PhraseInsert;
-        Update: Partial<PhraseInsert>;
+        Row:           Phrase;
+        Insert:        PhraseInsert;
+        Update:        Partial<PhraseInsert>;
+        Relationships: [];
       };
       learner_progress: {
-        Row: LearnerProgress;
-        Insert: LearnerProgressInsert;
-        Update: Partial<LearnerProgressInsert>;
+        Row:           LearnerProgress;
+        Insert:        LearnerProgressInsert;
+        Update:        Partial<LearnerProgressInsert>;
+        Relationships: [];
       };
       speaking_attempts: {
-        Row: SpeakingAttempt;
-        Insert: SpeakingAttemptInsert;
-        Update: Partial<SpeakingAttemptInsert>;
+        Row:           SpeakingAttempt;
+        Insert:        SpeakingAttemptInsert;
+        Update:        Partial<SpeakingAttemptInsert>;
+        Relationships: [];
       };
       challenges: {
-        Row: Challenge;
-        Insert: ChallengeInsert;
-        Update: Partial<ChallengeInsert>;
+        Row:           Challenge;
+        Insert:        ChallengeInsert;
+        Update:        Partial<ChallengeInsert>;
+        Relationships: [];
       };
       challenge_completions: {
-        Row: ChallengeCompletion;
-        Insert: ChallengeCompletionInsert;
-        Update: Partial<ChallengeCompletionInsert>;
+        Row:           ChallengeCompletion;
+        Insert:        ChallengeCompletionInsert;
+        Update:        Partial<ChallengeCompletionInsert>;
+        Relationships: [];
       };
     };
+    Views:          Record<string, never>;
+    Functions:      Record<string, never>;
+    Enums:          Record<string, never>;
+    CompositeTypes: Record<string, never>;
   };
 };

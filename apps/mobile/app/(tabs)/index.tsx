@@ -10,10 +10,10 @@ import { router } from "expo-router";
 import { KoruSpinner } from "@korero/ui";
 import {
   createSupabaseClient,
-  getLearner,
-  getClassByCode,
+  getLearnerByUserId,
+  getClassById,
   getChallengesForClass,
-  getPatternsByWeek,
+  getPatternsByLevel,
   getLearnerStats,
 } from "@korero/data";
 import type { Learner, SentencePattern, Challenge, Class, LearnerStats } from "@korero/data";
@@ -54,22 +54,24 @@ export default function HomeScreen() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { router.replace("/"); return; }
 
-      // Stage 1: learner profile
-      const learner = await getLearner(user.id);
+      // Stage 1: learner profile (look up by auth user_id)
+      const learner = await getLearnerByUserId(user.id);
       if (!learner) { router.replace("/onboarding"); return; }
 
-      // Stage 2: parallel
+      // Stage 2: stats + class info in parallel
       const [stats, classInfo] = await Promise.all([
-        getLearnerStats(user.id),
-        learner.class_code ? getClassByCode(learner.class_code).catch(() => null) : null,
+        getLearnerStats(learner.id),   // ← learner.id (UUID), not auth user.id
+        learner.class_id
+          ? getClassById(learner.class_id).catch(() => null)
+          : Promise.resolve(null),
       ]);
-
-      const weekNumber = classInfo?.week_number ?? 1;
 
       // Stage 3: patterns + challenges
       const [patterns, challenges] = await Promise.all([
-        getPatternsByWeek(learner.level, weekNumber).catch(() => []),
-        classInfo ? getChallengesForClass(classInfo.id).catch(() => []) : [],
+        getPatternsByLevel(learner.level).catch(() => []),
+        classInfo
+          ? getChallengesForClass(classInfo.id).catch(() => [])
+          : Promise.resolve([]),
       ]);
 
       setData({
@@ -78,9 +80,9 @@ export default function HomeScreen() {
         pattern:    patterns[0] ?? null,
         classInfo:  classInfo ?? null,
         challenge:  challenges[0] ?? null,
-        weekNumber,
+        weekNumber: patterns[0]?.order_num ?? 1,
       });
-    } catch (e) {
+    } catch {
       setError("Could not load your data. Pull down to retry.");
     } finally {
       setLoading(false);
@@ -170,7 +172,7 @@ export default function HomeScreen() {
           <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
             <View style={{ backgroundColor: "rgba(255,255,255,0.1)", borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 }}>
               <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 11, color: "rgba(245,240,232,0.6)" }}>
-                Week {weekNumber}
+                Pattern {weekNumber}
               </Text>
             </View>
             <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 11, color: "rgba(245,240,232,0.4)" }}>
@@ -179,26 +181,15 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Pattern */}
+        {/* Pattern — uses correct field names: .pattern and .english */}
         {pattern ? (
           <View style={{ gap: 4 }}>
             <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 24, color: "#F5F0E8", lineHeight: 30 }}>
-              {pattern.pattern_te_reo}
+              {pattern.pattern}
             </Text>
             <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 14, color: "rgba(245,240,232,0.55)", fontStyle: "italic" }}>
-              {pattern.pattern_english}
+              {pattern.english}
             </Text>
-            <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.1)" }}>
-              <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 10, color: "rgba(200,169,81,0.7)", textTransform: "uppercase", letterSpacing: 2, marginBottom: 4 }}>
-                Example
-              </Text>
-              <Text style={{ fontFamily: "PlayfairDisplay_400Regular", fontSize: 16, color: "#C8A951", fontStyle: "italic" }}>
-                "{pattern.example_te_reo}"
-              </Text>
-              <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: "rgba(245,240,232,0.4)", marginTop: 2 }}>
-                {pattern.example_english}
-              </Text>
-            </View>
           </View>
         ) : (
           <View style={{ gap: 4 }}>
@@ -292,17 +283,20 @@ export default function HomeScreen() {
               Class Group
             </Text>
             <View style={{ backgroundColor: "rgba(200,169,81,0.15)", borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3 }}>
-              <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 11, color: "#C8A951" }}>{classInfo.class_code}</Text>
+              <Text style={{ fontFamily: "DMSans_700Bold", fontSize: 11, color: "#C8A951" }}>
+                {classInfo.class_code}
+              </Text>
             </View>
           </View>
 
           {challenge ? (
             <View style={{ gap: 3, marginBottom: 14 }}>
-              <Text style={{ fontFamily: "DMSans_500Medium", fontSize: 11, color: "#04342C", textTransform: "uppercase", letterSpacing: 1.5 }}>
+              <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 11, color: "#04342C", textTransform: "uppercase", letterSpacing: 1.5 }}>
                 🏆 Challenge
               </Text>
+              {/* challenge.phrase — correct field name (not challenge.title) */}
               <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 20, color: "#1A1A1A", lineHeight: 26 }}>
-                {challenge.title}
+                {challenge.phrase}
               </Text>
               {challenge.due_date && (
                 <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 12, color: "rgba(26,26,26,0.4)" }}>
@@ -312,12 +306,16 @@ export default function HomeScreen() {
             </View>
           ) : (
             <View style={{ gap: 3, marginBottom: 14 }}>
+              {/* classInfo.name — correct field (not kaiako_name) */}
               <Text style={{ fontFamily: "PlayfairDisplay_700Bold", fontSize: 20, color: "#1A1A1A" }}>
-                {classInfo.kaiako_name}
+                {classInfo.name}
               </Text>
-              <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 13, color: "rgba(26,26,26,0.5)" }}>
-                Week {classInfo.week_number}{classInfo.current_theme ? ` · ${classInfo.current_theme}` : ""}
-              </Text>
+              {/* classInfo.teacher_name — correct field (not kaiako_name) */}
+              {classInfo.teacher_name ? (
+                <Text style={{ fontFamily: "DMSans_400Regular", fontSize: 13, color: "rgba(26,26,26,0.5)" }}>
+                  {classInfo.teacher_name}
+                </Text>
+              ) : null}
             </View>
           )}
 

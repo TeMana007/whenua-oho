@@ -55,14 +55,20 @@ export async function upsertProgress(
 }
 
 /**
- * Simple SM-2-inspired interval calculation.
- * confidence 0.0–0.4 → review again in 1 day
- * confidence 0.4–0.7 → review in 3 days
- * confidence 0.7–1.0 → review in 7 days
+ * SM-2-inspired interval calculation aligned to Reo Ora curriculum schedule.
+ * confidence 0.0–0.4  → review in  1 day
+ * confidence 0.4–0.6  → review in  3 days
+ * confidence 0.6–0.75 → review in  7 days
+ * confidence 0.75–0.9 → review in 14 days
+ * confidence 0.9–1.0  → review in 30 days
  */
 function calculateNextReview(confidence: number): Date {
-  const now = new Date();
-  const days = confidence < 0.4 ? 1 : confidence < 0.7 ? 3 : 7;
+  const now  = new Date();
+  const days = confidence < 0.4  ? 1
+             : confidence < 0.6  ? 3
+             : confidence < 0.75 ? 7
+             : confidence < 0.9  ? 14
+             : 30;
   now.setDate(now.getDate() + days);
   return now;
 }
